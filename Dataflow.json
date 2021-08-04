@@ -1,0 +1,83 @@
+{
+    "PPV_ComputeRelative_1": {
+      "action": "computeRelative",
+      "parameters": {
+        "source": "PPV_Filter_1",
+        "computedFields": [
+          {
+            "name": "PPV_IsLast",
+            "label": "PPV_IsLast",
+            "expression": {
+              "saqlExpression": "case\n\nwhen next(TIMESTAMP) is null then \"true\" else \"false\"\n\nend",
+              "type": "Text"
+            }
+          },
+          {
+            "name": "PPV_PagePath",
+            "label": "PPV_PagePath",
+            "expression": {
+              "saqlExpression": "case\nwhen previous(TIMESTAMP) is null then current('PPV_PageCtx')\nwhen previous('PPV_PageCtx') == current('PPV_PageCtx') then previous('PPV_PagePath')\nelse\nprevious('PPV_PagePath') + \" > \"+ current('PPV_PageCtx')\nend",
+              "type": "Text"
+            }
+          }
+        ],
+        "orderBy": [
+          {
+            "name": "TIMESTAMP",
+            "direction": "asc"
+          }
+        ],
+        "partitionBy": [
+          "SESSION_KEY"
+        ]
+      }
+    },
+    "PPV_ComputeExpression_1": {
+      "action": "computeExpression",
+      "parameters": {
+        "source": "PPV_Edgemart_1",
+        "mergeWithSource": true,
+        "computedFields": [
+          {
+            "name": "PPV_PageEntity",
+            "saqlExpression": "'PAGE_ENTITY_TYPE'",
+            "label": "PPV_PageEntity",
+            "type": "Text"
+          },
+          {
+            "type": "Text",
+            "saqlExpression": "case \n   when index_of(PAGE_URL, \"?\") > 0 then substr(PAGE_URL, 1, index_of(PAGE_URL, \"?\")-1) \n   when index_of(PAGE_URL, \"#\") > 0 then substr(PAGE_URL, 1, index_of(PAGE_URL, \"#\")-1) \n   else PAGE_URL \nend\n",
+            "name": "PPV_PageUrlNoParam",
+            "label": "PPV_PageUrlNoParam"
+          },
+          {
+            "type": "Text",
+            "name": "PPV_PageCtx",
+            "label": "PPV_PageCtx",
+            "saqlExpression": "case PAGE_CONTEXT\n    when \"forceChatter:desktopChatter\" then \"Chatter\"\n    when \"one:chatter\" then \"Chatter\"\n    when \"forceChatter:feedElementFullView\" then \"Chatter\"\n    when \"desktopDashboards:dashboard\" then \"Dashboard\"\n    when \"runtime_sales_xclean:discoveryAccountsTabHome\" then \"Discovery \"+PPV_PageEntity\n    when \"reports:reportBuilder\" then \"Report Edited\"\n    when \"one:recordLoadError\" then \"Error Page\"\n    when \"one:unsupportedHome\" then \"Error Page\"\n    when \"one:unsupported\" then \"Error Page\"\n    when \"unknown\" then \"Error Page\"\n    when \"force:filterList\" then \"FilterList\"\n    when \"sfa:hierarchyFullView\" then PPV_PageEntity+\" Hierarchy Page\"\n    when \"forceSearch:search\" then PPV_PageEntity+\" Home Page\"\n    when \"forceContent:filesHomeDesktop\" then PPV_PageEntity+\" Home Page\"\n    when \"forceContent:fileList\" then PPV_PageEntity+\" Home Page\"\n    when \"notes:notesObjectHome\" then PPV_PageEntity+\" Home Page\"\n    when \"one:consoleObjectHome\" then PPV_PageEntity+\" Home Page\"\n    when \"calendar:home\" then PPV_PageEntity+\" Home Page\"\n    when \"sfa:sfdcEventList\" then PPV_PageEntity+\" Home Page\"\n    when \"force:objectHomeDesktop\" then PPV_PageEntity+\" Home Page\"\n    when \"runtime_approval_process:navigateToPendingApprovalList\" then PPV_PageEntity+\" Home Page\"\n    when \"runtime_sales_activities:taskBorderLayout\" then PPV_PageEntity+\" Home Page\"\n    when \"sfa:analyticsHome\" then PPV_PageEntity+\" Home Page\"\n    when \"home:landing\" then \"Home Landing\"\n    when \"e.force:createRecord\" then PPV_PageEntity+\" Created\"\n    when \"force:changeRecordType\" then PPV_PageEntity+\" Created\"\n    when \"home:recentsRecordListView\" then \"Recent View\"\n    when \"force:relatedList\" then PPV_PageEntity+\" Related List\"\n    when \"force:relatedListDesktop\" then PPV_PageEntity+\" Related List\"\n    when \"runtime_platform_testhistory:apexTestExecutionPage\" then \"Setup\"\n    when \"setup_platform_integration:dataloaderIoSetup\" then \"Setup\"\n    when \"setup_platform_sfdx:somaSetupPage\" then \"Setup\"\n    when \"instrumentation:lightningUsage\" then \"Setup\"\n    when \"instrumentation:lightningUsageSetup\" then \"Setup\"\n    when \"setupnav:appManager\" then \"Setup\"\n    when \"objectManager:objectList\" then \"Setup\"\n    when \"onesetup:pageNotFound\" then \"Setup\"\n    when \"objectManager:lookupRedirect\" then \"Setup\"\n    when \"objectManager:objectDetailPage\" then \"Setup\"\n    when \"onesetup:baseHomePage\" then \"Setup\"\n    when \"onesetup:setupAlohaPage\" then \"Setup\"\n    when \"e.setup:navigateToSetup\" then \"Setup\"\n    when \"e.forceChatter:downloadFile\" then PPV_PageEntity+\" Viewed\"\n    when \"force:recordLandingPage\" then PPV_PageEntity+\" Viewed\"\n    when \"force:recordHome\" then PPV_PageEntity+\" Viewed\"\n    when \"one:recordHomeFlexipage\" then PPV_PageEntity+\" Viewed\"\n    when \"forceKnowledge:articleRedirect\" then PPV_PageEntity+\" Viewed\"\n    when \"reports:reportBase\" then PPV_PageEntity+\" Viewed\"\n    when \"wave:waveHomeTab\" then \"Wave\"\n    else\n        case\n            when starts_with('PAGE_CONTEXT', \"c:\") then substr('PAGE_CONTEXT', 2)+\" Component\"\n            when starts_with('PPV_PageUrlNoParam', \"/lightning/settings/\") then \"Settings\"\n            when starts_with('PPV_PageUrlNoParam', \"/lightning/setup/\") then \"Setup\"\n            when starts_with('PPV_PageUrlNoParam', \"/lightning/cmp/\") then substr('PPV_PageUrlNoParam', index_of('PPV_PageUrlNoParam', \"/\", 1, 3)+1)+\" Component\"\n            when starts_with('PPV_PageUrlNoParam', \"/lightning/n/\") then substr('PPV_PageUrlNoParam', index_of('PPV_PageUrlNoParam', \"/\", 1, 3)+1)+\" Page\"\n            when starts_with('PPV_PageUrlNoParam', \"/lightning/o/\") && ends_with('PPV_PageUrlNoParam', \"/new\") then PPV_PageEntity+\" Created\"\n            when starts_with('PPV_PageUrlNoParam', \"/lightning/r/\") && ends_with('PPV_PageUrlNoParam', \"/view\") then PPV_PageEntity+\" Viewed\"\n            when starts_with('PPV_PageUrlNoParam', \"/lightning/r/\") && ends_with('PPV_PageUrlNoParam', \"/delete\") then PPV_PageEntity+\" Deleted\"\n            when starts_with('PPV_PageUrlNoParam', \"/lightning/r/\") && ends_with('PPV_PageUrlNoParam', \"/edit\") then PPV_PageEntity+\" Updated\"\n            else \"Unknown\"\n        end\nend "
+          }
+        ]
+      }
+    },
+    "PPV_Edgemart_1": {
+      "action": "edgemart",
+      "parameters": {
+        "alias": "LightningPageViewWithUsers"
+      }
+    },
+    "PPV_Filter_1": {
+      "action": "filter",
+      "parameters": {
+        "source": "PPV_ComputeExpression_1",
+        "filter": "PPV_PageCtx:N:Unknown"
+      }
+    },
+    "Register_PagePathViews": {
+      "action": "sfdcRegister",
+      "parameters": {
+        "source": "PPV_ComputeRelative_1",
+        "alias": "PPV_LightningPathView",
+        "name": "PPV_LightningPathView"
+      }
+    }
+  }
