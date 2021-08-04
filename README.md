@@ -32,5 +32,5 @@ If you see some "setup" page you might consider filtering out in your dashboard 
 - Don't forget the schedule the dataflow after the one from Shield Event Monitoring application.
 
 ## Create your first lens
-- After the dataset is created you can start construct a "Lens" based on "PPV_LightningPathView" for example group by "PPV_PagePath" and Order by count descending.
+- After the dataset is created you can start construct a "Lens" based on "PPV_LightningPathView" for example group by "PPV_PagePath", Order by count descending and don't forget to filter with ```PPV_IsLast=true``` condition.
 - Happy lensing and dashboarding!!!
