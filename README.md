@@ -1,5 +1,14 @@
 # PagePathViews
 
+## My customer wants to view the most common path that users are navigating...
+After importing the dataflow of this repository in your TCRM, you will be able to have dashboard like this:
+![](screenshots/ScreenShot-10.png)
+
+Or like this (this includes the country of the user):
+![](screenshots/ScreenShot-11.png)
+
+If you see some "setup" page you might consider filtering out in your dashboard the admins!!
+
 ## Create the dataflow in your Tableau CRM
 
 ### Step 1
